@@ -21,7 +21,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Install Kotlin compiler
-      run: choco install kotlin -y
+      run: choco install kotlinc -y
 
     - name: Create directory structure
       run: |
