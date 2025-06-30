@@ -240,11 +240,11 @@ class AppManagerPage : Page("ManageAPP", Main.width/5,0,Main.width/10,Main.heigh
                 ?.listFiles()
                 ?.firstOrNull { it.name=="$packageName.png"&&it.isFile }
             if (icon==null) {
-                LogUtils.debug("没有找到${packageName}的图标")
+                LogUtils.debug("Not Found${packageName}'s icon")
                 null
             } else ImageIcon(ImageIO.read(icon).getScaledInstance((height - height/16*5)/10,(height - height/16*5)/10, Image.SCALE_DEFAULT))
         }catch (e: Exception){
-            LogUtils.error("获取${packageName}的图标时出错,$e")
+            LogUtils.error("Get${packageName}Error Getting 's Icom,$e")
             null
         }
     }
@@ -272,13 +272,13 @@ class AppManagerPage : Page("ManageAPP", Main.width/5,0,Main.width/10,Main.heigh
             latch.await()
             appList.sortedBy { it[0] }.toList()
         } catch (e: Exception) {
-            LogUtils.error("获取已安装的APP时出错,$e")
+            LogUtils.error("Errr Get Installed App,$e")
             null
         }
     }
     private fun getName(packageName: String): String?{
         return try {
-            LogUtils.info("获取${packageName}的名称")
+            LogUtils.info("Get${packageName}'s Name")
             val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell ls /data/local/tmp")
             val br = BufferedReader(InputStreamReader(process.inputStream))
             var line: String?
@@ -290,23 +290,23 @@ class AppManagerPage : Page("ManageAPP", Main.width/5,0,Main.width/10,Main.heigh
             br.close()
             val aapt = lines.find { it.contains("aapt-arm-pie") }
             if (aapt==null) {
-                LogUtils.info("没有找到aapt,尝试安装")
+                LogUtils.info("Not Foundaapt,尝试安装")
                 val aaptInputStream = this::class.java.getResourceAsStream("/aapt/aapt-arm-pie")
                 val tmp = System.getProperty("java.io.tmpdir")
                 val tmpDir = Files.createTempDirectory(Paths.get(tmp),"KevinWSAToolBox-AAPT")
                 val tmpDirFile = tmpDir.toFile()
-                LogUtils.info("aapt缓存路径:$tmpDirFile,缓存将在退出时删除")
+                LogUtils.info("aaptCachePath:$tmpDirFile,缓存将在退出时删除")
                 val fos = FileOutputStream(File("$tmpDirFile\\aapt-arm-pie"))
                 fos.write(aaptInputStream!!.readAllBytes())
                 aaptInputStream.close()
                 fos.close()
-                LogUtils.info("释放文件成功!")
+                LogUtils.info("Success Release")
                 Runtime.getRuntime().exec("${Main.aDBCommand} push \"$tmpDirFile\\aapt-arm-pie\" /data/local/tmp/aapt-arm-pie")
-                LogUtils.info("复制文件成功!")
+                LogUtils.info("Success Copy")
                 Runtime.getRuntime().exec("${Main.aDBCommand} shell chmod 0755 /data/local/tmp/aapt-arm-pie")
-                LogUtils.info("权限设置成功!")
+                LogUtils.info("Success Set Permission")
                 Thread.sleep(250)
-                LogUtils.info("aapt安装成功!")
+                LogUtils.info("aaptInstalled Success!")
             }
             val process3 = Runtime.getRuntime().exec("${Main.aDBCommand} shell pm path $packageName")
             lines.clear()
@@ -326,7 +326,7 @@ class AppManagerPage : Page("ManageAPP", Main.width/5,0,Main.width/10,Main.heigh
             br4.close()
             getName(lines)
         } catch (e: Exception) {
-            LogUtils.error("获取${packageName}的名称时出错,$e")
+            LogUtils.error("Get${packageName}Error-getting-name,$e")
             null
         }
     }
@@ -341,7 +341,7 @@ class AppManagerPage : Page("ManageAPP", Main.width/5,0,Main.width/10,Main.heigh
     }
     private fun getVersion(packageName: String): String?{
         return try {
-            LogUtils.info("获取${packageName}的版本")
+            LogUtils.info("Get${packageName}的版本")
             val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell pm dump $packageName")
             val br = BufferedReader(InputStreamReader(process.inputStream))
             var line: String?
@@ -354,13 +354,13 @@ class AppManagerPage : Page("ManageAPP", Main.width/5,0,Main.width/10,Main.heigh
                 .replace("versionName=","")
                 .removeSpace()
         } catch (e: Exception) {
-            LogUtils.error("获取${packageName}的版本时出错,$e")
+            LogUtils.error("Get${packageName}的版本时出错,$e")
             null
         }
     }
     private fun getState(packageName: String): String?{
         return try {
-            LogUtils.info("获取${packageName}的状态")
+            LogUtils.info("Get${packageName}的状态")
             val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell pidof $packageName")
             val br = BufferedReader(InputStreamReader(process.inputStream))
             var line: String?
@@ -372,7 +372,7 @@ class AppManagerPage : Page("ManageAPP", Main.width/5,0,Main.width/10,Main.heigh
             br.close()
             if(lines.firstOrNull{it.isNotEmpty()}!=null) "正在运行" else "未运行"
         } catch (e: Exception) {
-            LogUtils.error("获取${packageName}的状态时出错,$e")
+            LogUtils.error("Get${packageName}的状态时出错,$e")
             null
         }
     }
