@@ -1,6 +1,6 @@
-#name: Build Kotlin with kotlinc
+name: Build Kotlin with kotlinc
 
-#on:
+on:
   push:
     branches: [ main ]
   pull_request:
