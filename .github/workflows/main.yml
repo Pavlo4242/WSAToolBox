@@ -30,12 +30,12 @@ jobs:
 
     - name: Compile Kotlin to JAR
       run: |
-        cd WSAToolbox
-        kotlinc src/main/kevin -include-runtime -d ../output/WSAToolbox.jar
+        cd WSAToolBox
+        kotlinc src/main/kevin -include-runtime -d ../output/WSAToolBox.jar
 
     - name: Copy resources
       run: |
-        xcopy /E /Y WSAToolbox\src\main\resources output\resources
+        xcopy /E /Y WSAToolBox\src\main\resources output\resources
 
     - name: Create distribution zip
       run: |
@@ -46,4 +46,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: WSAToolbox
-        path: output/WSAToolbox.zip
+        path: output/WSAToolBox.zip
