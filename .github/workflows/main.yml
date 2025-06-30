@@ -1,0 +1,46 @@
+name: Build WSAToolBox
+
+# This workflow runs on any push to the master branch
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out your repository code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Set up Java, which is required by Kotlin
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      # 3. Set up the Kotlin command-line compiler
+      - name: Setup Kotlin
+        uses: fwilhe2/setup-kotlin@main
+        with:
+          version: '1.9.0' # You can specify a Kotlin version
+
+      # 4. Compile the Kotlin source code into a JAR file
+      - name: Compile with kotlinc
+        run: |
+          kotlinc WSAToolbox/src/main/kevin/**/*.kt \
+          -include-runtime \
+          -d WSAToolbox.jar \
+          -verbose
+
+      # 5. (Optional) Upload the built JAR as an artifact
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: wsatoolbox-jar
+          path: WSAToolbox.jar
