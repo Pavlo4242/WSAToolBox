@@ -1,0 +1,24 @@
+plugins {
+    kotlin("jvm") version "1.9.0"
+    application
+}
+
+group = "kevin"
+version = "1.0-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // No external dependencies needed for now
+}
+
+application {
+    mainClass.set("kevin.MainKt")
+}
+
+// Ensure the project includes resources like icons or other files
+sourceSets["main"].resources {
+    srcDirs("src/main/resources")
+}
