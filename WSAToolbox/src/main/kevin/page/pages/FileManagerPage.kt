@@ -24,9 +24,9 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
         return@lazy scrollPane
     }
     private val upload = JButton("Upload")
-    private val delete = JButton("删除")
-    private val download = JButton("下载")
-    private val up = JButton("向上")
+    private val delete = JButton("Delete")
+    private val download = JButton("Download")
+    private val up = JButton("Up")
     private val path = JTextField("/storage/emulated/0")
     private val message = JLabel("Idle...")
     private val pathMessage = JLabel("Path:")
@@ -38,7 +38,8 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
         fileTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
         fileTable.rowHeight = (height - height/16*5)/10
         fileTable.autoResizeMode = JTable.AUTO_RESIZE_OFF
-        fileTable.font = Font("MS YaHei",1,16)
+        // "MS YaHei" is a font known for good Chinese character rendering. Kept for compatibility.
+        fileTable.font = Font("MS YaHei", Font.PLAIN, 16)
         fileTable.columnModel.getColumn(0).preferredWidth = width/12*5
         fileTable.columnModel.getColumn(1).preferredWidth = width/24*5
         fileTable.columnModel.getColumn(2).preferredWidth = width/6
@@ -94,13 +95,13 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
                         message.text = "Uploading"
                         Main.window.update(Main.window.graphics)
                         jFileChooser.selectedFiles.forEach {
-                            LogUtils.debug("Upload$it")
+                            LogUtils.debug("Upload $it")
                             val command = if (it.isFile) {
                                 "\"$nowPath\"/"
                             } else if (it.isDirectory) {
                                 "\"$nowPath/${it.name}\""
                             } else {
-                                LogUtils.error("选择的不是文件夹也不是文件")
+                                LogUtils.error("Selection is neither a file nor a folder")
                                 null
                             }
                             if (command != null) {
@@ -111,18 +112,18 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
                                     LogUtils.info("ADB: $line")
                                 }
                                 br.close()
-                                LogUtils.debug("Upload${it}完成")
+                                LogUtils.debug("Upload of ${it} complete")
                             }
                         }
-                        message.text = "Upload Complete Refreshing ..."
+                        message.text = "Upload complete, refreshing..."
                         Main.window.update(Main.window.graphics)
-                        LogUtils.info("Upload Complete Refreshing ...")
+                        LogUtils.info("Upload complete, refreshing...")
                         update()
-                        message.text = "Upload Done Refresh FInish"
-                        LogUtils.info("Upload Done Refresh FInish")
-                    } else LogUtils.info("Cancel")
+                        message.text = "Upload Done, Refresh Finished"
+                        LogUtils.info("Upload Done, Refresh Finished")
+                    } else LogUtils.info("Cancelled")
                 } catch (e:Exception){
-                    LogUtils.error("Upload Error,$e")
+                    LogUtils.error("Error during upload, $e")
                 }
             }
             override fun mousePressed(e: MouseEvent?) {}
@@ -137,8 +138,8 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
             override fun mouseClicked(e: MouseEvent?) {
                 try {
                     if (!delete.isEnabled) return
-                    LogUtils.info("Try Delete")
-                    message.text = "Try Delete"
+                    LogUtils.info("Attempting to delete")
+                    message.text = "Attempting to delete"
                     Main.window.update(Main.window.graphics)
                     val file = files[fileTable.selectedRow]
                     val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell rm${if (file.second>1) " -rf" else ""} \"${nowPath.replace(" ","\\ ")}/${file.first.replace(" ","\\ ")}\"")
@@ -150,13 +151,13 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
                         lastMessage = line!!
                     }
                     br.close()
-                    LogUtils.info("Delete Complete")
-                    message.text = "${if (lastMessage=="") "Delete Success" else try{lastMessage.split(": ")[2]}catch (e:Exception){"Delete Err"}},Refreshing..."
+                    LogUtils.info("Delete complete")
+                    message.text = "${if (lastMessage=="") "Delete Success" else try{lastMessage.split(": ")[2]}catch (e:Exception){"Delete Error"}}, Refreshing..."
                     Main.window.update(Main.window.graphics)
                     update()
-                    message.text = "${if (lastMessage=="") "Delete Success" else try{lastMessage.split(": ")[2]}catch (e:Exception){"Delete Err"}},Refresh Done"
+                    message.text = "${if (lastMessage=="") "Delete Success" else try{lastMessage.split(": ")[2]}catch (e:Exception){"Delete Error"}}, Refresh Done"
                 }catch (e:Exception){
-                    LogUtils.error("Delete Err,$e")
+                    LogUtils.error("Error on delete, $e")
                 }
             }
             override fun mousePressed(e: MouseEvent?) {}
@@ -171,7 +172,7 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
             override fun mouseClicked(e: MouseEvent?) {
                 try {
                     if (!download.isEnabled) return
-                    LogUtils.info("DL File")
+                    LogUtils.info("Download file")
                     val jFileChooser = JFileChooser()
                     jFileChooser.dialogTitle = "Select Save Location"
                     jFileChooser.dialogType = JFileChooser.SAVE_DIALOG
@@ -190,11 +191,11 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
                             lastLine = line!!+","
                         }
                         br.close()
-                        message.text = "${lastLine}Execution Fin"
-                        LogUtils.info("${lastLine}Execution Fin")
-                    } else LogUtils.info("Cancel")
+                        message.text = "${lastLine}Execution finished"
+                        LogUtils.info("${lastLine}Execution finished")
+                    } else LogUtils.info("Cancelled")
                 }catch (e:Exception){
-                    LogUtils.error("DL Err,$e")
+                    LogUtils.error("Error on download, $e")
                 }
             }
             override fun mousePressed(e: MouseEvent?) {}
@@ -220,7 +221,8 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
         up.isVisible = false
 
         path.setBounds(width/50*4,height/16*3,width - width/10, height/40*3)
-        path.font = Font("宋体",1,18)
+        // Original font was "宋体" (SimSun). Replaced with a more standard logical font.
+        path.font = Font(Font.SANS_SERIF, Font.BOLD, 18)
         path.addActionListener {
             while (path.text.endsWith("/")&&path.text!="/") path.text = path.text.removeSuffix("/")
             if (path.text=="") path.text = "/"
@@ -230,11 +232,13 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
         path.isVisible = false
 
         message.setBounds(width/10*6+width/50*5,height/10,width, height/40*3)
-        message.font = Font("宋体",1,18)
+        // Original font was "宋体" (SimSun). Replaced with a more standard logical font.
+        message.font = Font(Font.SANS_SERIF, Font.BOLD, 18)
         message.isVisible = false
 
         pathMessage.setBounds(width/50,height/16*3,width,height/40*3)
-        pathMessage.font = Font("宋体",1,20)
+        // Original font was "宋体" (SimSun). Replaced with a more standard logical font.
+        pathMessage.font = Font(Font.SANS_SERIF, Font.BOLD, 20)
         pathMessage.isVisible = false
 
         update()
@@ -257,7 +261,7 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
         }
         files.clear()
         fileList?.forEach { files += it[0] to it[3].toInt() }
-        fileTable.model = object : DefaultTableModel(fileList,arrayOf("Name","Modification Time","Size","Number Files","Type")){
+        fileTable.model = object : DefaultTableModel(fileList,arrayOf("Name","Modification Time","Size","Number of Files","Type")){
             override fun isCellEditable(row: Int, column: Int): Boolean {
                 return false
             }
@@ -275,7 +279,7 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
     }
     private fun getFiles(): Array<Array<String>>? {
         return try {
-            LogUtils.info("Get File List")
+            LogUtils.info("Getting file list")
             val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell ls $nowPath -all")
             val br = BufferedReader(InputStreamReader(process.inputStream,"UTF-8"))
             var line: String?
@@ -289,7 +293,7 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
                 LogUtils.warn("ls: //init: Permission denied")
                 lines.removeFirst()
             } else if (!lines.first().startsWith("total")) {
-                LogUtils.error("Err,${lines.first()}")
+                LogUtils.error("Error, ${lines.first()}")
                 return null
             }
             lines.removeFirst()
@@ -303,10 +307,10 @@ class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Mai
                 if (name.contains(" ->")||name=="."||name=="..") continue
                 files += arrayOf(name,time,size,fileCount,if(fileCount=="1") "File" else "Folder")
             }
-            LogUtils.info("All File Success Get!")
+            LogUtils.info("All files retrieved successfully!")
             if (files.isNotEmpty()) files.toTypedArray() else null
         }catch (e: Exception){
-            LogUtils.error("Execption Get File,$e")
+            LogUtils.error("Error getting files, $e")
             null
         }
     }
