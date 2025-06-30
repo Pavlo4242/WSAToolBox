@@ -28,18 +28,18 @@ import javax.swing.table.TableCellRenderer
 import kotlin.collections.ArrayList
 
 
-class AppManagerPage : Page("管理APP", Main.width/5,0,Main.width/10,Main.height/40*3) {
-    private val appTable = JTable(arrayOf(), arrayOf("图标|APP名称","APP包名","版本","状态"))
+class AppManagerPage : Page("ManageAPP", Main.width/5,0,Main.width/10,Main.height/40*3) {
+    private val appTable = JTable(arrayOf(), arrayOf("Icon|Name","APPPkg Name","Ver","Status"))
     private val appTablePane by lazy {
         val scrollPane = JScrollPane(appTable)
         scrollPane.setBounds(0,height/16*3,width - width/50,height - height/16*5)
         scrollPane.isVisible = false
         return@lazy scrollPane
     }
-    private val refresh = JButton("刷新")
-    private val remove = JButton("删除")
-    private val start = JButton("启动")
-    private val stop = JButton("停止")
+    private val refresh = JButton("Refresh")
+    private val remove = JButton("Delete")
+    private val start = JButton("Start")
+    private val stop = JButton("Stop")
     private val message = JLabel("Idle...")
     private val appIcons = arrayListOf<ImageIcon>()
     private val appStates = arrayListOf<Boolean>()
@@ -60,7 +60,7 @@ class AppManagerPage : Page("管理APP", Main.width/5,0,Main.width/10,Main.heigh
                 }
                 l
             }
-        appTable.font = Font("微软雅黑",1,16)
+        appTable.font = Font("MS YaHei",1,16)
         appTable.columnModel.getColumn(0).preferredWidth = width/5
         appTable.columnModel.getColumn(1).preferredWidth = width/3
         appTable.columnModel.getColumn(2).preferredWidth = width/8
@@ -89,10 +89,10 @@ class AppManagerPage : Page("管理APP", Main.width/5,0,Main.width/10,Main.heigh
         refresh.setBounds(width/50,height/10,width/20*3, height/40*3)
         refresh.addMouseListener(object : MouseListener{
             override fun mouseClicked(e: MouseEvent?) {
-                message.text = "刷新中..."
+                message.text = "Refreshing..."
                 Main.window.update(Main.window.graphics)
                 update()
-                message.text = if (Main.adbState) "刷新完成" else "未连接到WSA"
+                message.text = if (Main.adbState) "Refresh Complete" else "Not Connected WSA"
             }
             override fun mousePressed(e: MouseEvent?) {}
             override fun mouseReleased(e: MouseEvent?) {}
@@ -105,7 +105,7 @@ class AppManagerPage : Page("管理APP", Main.width/5,0,Main.width/10,Main.heigh
         remove.addMouseListener(object : MouseListener{
             override fun mouseClicked(e: MouseEvent?) {
                 if (!remove.isEnabled) return
-                message.text = "删除中..."
+                message.text = "Deleting..."
                 Main.window.update(Main.window.graphics)
                 message.text = if (Main.adbState) {
                     val process = Runtime.getRuntime().exec("${Main.aDBCommand} uninstall ${packageNames[appTable.selectedRow]}")
@@ -117,11 +117,11 @@ class AppManagerPage : Page("管理APP", Main.width/5,0,Main.width/10,Main.heigh
                         lines += line!!
                     }
                     br.close()
-                    message.text = "${lines.last()},刷新中..."
+                    message.text = "${lines.last()},Refreshing..."
                     Main.window.update(Main.window.graphics)
                     update()
-                    "刷新完成"
-                } else "未连接到WSA"
+                    "Refresh COmplete"
+                } else "No Connect WSA"
             }
             override fun mousePressed(e: MouseEvent?) {}
             override fun mouseReleased(e: MouseEvent?) {}
@@ -133,7 +133,7 @@ class AppManagerPage : Page("管理APP", Main.width/5,0,Main.width/10,Main.heigh
         start.setBounds(width/50*3 + width/20*6,height/10,width/20*3, height/40*3)
         start.addMouseListener(object : MouseListener{
             override fun mouseClicked(e: MouseEvent?) {
-                message.text = "尝试启动..."
+                message.text = "Attemped Start..."
                 Main.window.update(Main.window.graphics)
                 message.text = if (Main.adbState) {
                     val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell monkey -p ${packageNames[appTable.selectedRow]} -c android.intent.category.LAUNCHER 1")
@@ -143,11 +143,11 @@ class AppManagerPage : Page("管理APP", Main.width/5,0,Main.width/10,Main.heigh
                         LogUtils.info("ADB: $line")
                     }
                     br.close()
-                    message.text = "启动完成,刷新中..."
+                    message.text = "Started,Refreshing..."
                     Main.window.update(Main.window.graphics)
                     update()
-                    "刷新完成"
-                } else "未连接到WSA"
+                    "Attempt Close"
+                } else "Not Connect WSA"
             }
             override fun mousePressed(e: MouseEvent?) {}
             override fun mouseReleased(e: MouseEvent?) {}
