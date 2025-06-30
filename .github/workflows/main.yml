@@ -3,16 +3,30 @@ name: Build WSAToolbox
 on:
   push:
     branches: [master]
-  pull_request:
-    branches: [master]
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-latest  # Windows is case-insensitive by default
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Find Kotlin source directory (case-insensitive)
+      id: find_sources
+      run: |
+        # Find the kevin directory regardless of case
+        $kotlinDir = (Get-ChildItem -Recurse -Directory -Filter "kevin" | Select-Object -First 1).FullName
+        echo "Found Kotlin sources at: $kotlinDir"
+        echo "kotlin_dir=$kotlinDir" >> $env:GITHUB_OUTPUT
+
+    - name: Find resources directory (case-insensitive)
+      id: find_resources
+      run: |
+        # Find the resources directory regardless of case
+        $resDir = (Get-ChildItem -Recurse -Directory -Filter "resources" | Where-Object { $_.FullName -like "*main*" } | Select-Object -First 1).FullName
+        echo "Found resources at: $resDir"
+        echo "resources_dir=$resDir" >> $env:GITHUB_OUTPUT
 
     - name: Set up JDK
       uses: actions/setup-java@v4
@@ -23,27 +37,25 @@ jobs:
     - name: Install Kotlin compiler
       run: choco install kotlinc -y
 
-    - name: Create directory structure
+    - name: Compile Kotlin code
       run: |
-        mkdir output
-        mkdir output\resources
+        kotlinc "${{ steps.find_sources.outputs.kotlin_dir }}" -include-runtime -d WSAToolbox.jar
 
-    - name: Compile Kotlin to JAR
+    - name: Package resources
       run: |
-        cd WSAToolBox
-        kotlinc src/main/kevin -include-runtime -d ../output/WSAToolBox.jar
+        mkdir dist
+        move WSAToolbox.jar dist/
+        xcopy /E /I /Y "${{ steps.find_resources.outputs.resources_dir }}" dist\resources
 
-    - name: Copy resources
+    - name: Create final zip
       run: |
-        xcopy /E /Y WSAToolBox\src\main\resources output\resources
-
-    - name: Create distribution zip
-      run: |
-        cd output
-        7z a -tzip WSAToolbox.zip *
+        cd dist
+        7z a -tzip ../WSAToolbox.zip *
+        cd ..
+        dir WSAToolbox.zip
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: WSAToolbox
-        path: output/WSAToolBox.zip
+        path: WSAToolbox.zip
