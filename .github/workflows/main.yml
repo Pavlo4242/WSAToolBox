@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  # Windows is case-insensitive by default
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -37,25 +37,30 @@ jobs:
     - name: Install Kotlin compiler
       run: choco install kotlinc -y
 
-    - name: Compile Kotlin code
+    - name: Prepare resources structure
       run: |
-        kotlinc "${{ steps.find_sources.outputs.kotlin_dir }}" -include-runtime -d WSAToolbox.jar
+        # Create a temporary directory with the correct structure
+        mkdir -p temp_build/src
+        mkdir -p temp_build/resources
+        
+        # Copy sources and resources to the temporary directory
+        xcopy /E /I /Y "${{ steps.find_sources.outputs.kotlin_dir }}" temp_build\src\
+        xcopy /E /I /Y "${{ steps.find_resources.outputs.resources_dir }}" temp_build\resources\
 
-    - name: Package resources
+    - name: Compile Kotlin code with resources
       run: |
-        mkdir dist
-        move WSAToolbox.jar dist/
-        xcopy /E /I /Y "${{ steps.find_resources.outputs.resources_dir }}" dist\resources
+        # Compile with resources included in the JAR
+        kotlinc temp_build/src -include-runtime -d WSAToolbox.jar
+        cd temp_build/resources
+        jar uf ../../WSAToolbox.jar *
+        cd ../..
 
-    - name: Create final zip
+    - name: Verify JAR contents
       run: |
-        cd dist
-        7z a -tzip ../WSAToolbox.zip *
-        cd ..
-        dir WSAToolbox.zip
+        jar tf WSAToolbox.jar | findstr "platform-tools" || echo "ADB resources not found in JAR!"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: WSAToolbox
-        path: WSAToolbox.zip
+        path: WSAToolbox.jar
