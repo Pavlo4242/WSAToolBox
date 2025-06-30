@@ -33,7 +33,8 @@ class TaskManagerPage : Page("View Processes", Main.width/10*3,0,Main.width/10,M
         taskTable.rowHeight = (height - height/16*5)/10
         taskTable.autoResizeMode = JTable.AUTO_RESIZE_OFF
         //taskTable.selectionModel.addListSelectionListener { killTask.isEnabled = taskTable.selectedRow != -1 && Main.adbState }
-        taskTable.font = Font("MS YaHei",1,16)
+        // "MS YaHei" is a font known for good Chinese character rendering. Kept for compatibility.
+        taskTable.font = Font("MS YaHei", Font.PLAIN, 16)
         taskTable.columnModel.getColumn(0).preferredWidth = width/12*5
         taskTable.columnModel.getColumn(1).preferredWidth = width/6
         taskTable.columnModel.getColumn(2).preferredWidth = width/16
@@ -69,10 +70,10 @@ class TaskManagerPage : Page("View Processes", Main.width/10*3,0,Main.width/10,M
         refresh.setBounds(width/50,height/10,width/20*3, height/40*3)
         refresh.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {
-                message.text = "Refreshing"
+                message.text = "Refreshing..."
                 Main.window.update(Main.window.graphics)
                 update()
-                message.text = if (Main.adbState) "Refresh Finish" else "NotConnectWSA"
+                message.text = if (Main.adbState) "Refresh Finished" else "Not Connected to WSA"
             }
             override fun mousePressed(e: MouseEvent?) {}
             override fun mouseReleased(e: MouseEvent?) {}
@@ -85,7 +86,7 @@ class TaskManagerPage : Page("View Processes", Main.width/10*3,0,Main.width/10,M
         killTask.addMouseListener(object : MouseListener{
             override fun mouseClicked(e: MouseEvent?) {
                 if (!killTask.isEnabled) return
-                message.text = "Attempt2Kill"
+                message.text = "Attempting to kill..."
                 Main.window.update(Main.window.graphics)
                 message.text = if (Main.adbState) {
                     val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell kill ${taskPIDS[taskTable.selectedRow]}")
@@ -97,11 +98,11 @@ class TaskManagerPage : Page("View Processes", Main.width/10*3,0,Main.width/10,M
                         lines += line!!
                     }
                     br.close()
-                    message.text = "${lines.last()},刷新中..."
+                    message.text = "${lines.last()}, Refreshing..."
                     Main.window.update(Main.window.graphics)
                     update()
-                    "${lines.last()},刷新完成."
-                } else "NotConnectWSA"
+                    "${lines.last()}, Refresh complete."
+                } else "Not Connected to WSA"
             }
             override fun mousePressed(e: MouseEvent?) {}
             override fun mouseReleased(e: MouseEvent?) {}
@@ -111,7 +112,8 @@ class TaskManagerPage : Page("View Processes", Main.width/10*3,0,Main.width/10,M
         killTask.isVisible = false
 */
         message.setBounds(width/25 + width/20*3,height/10,width, height/40*3)
-        message.font = Font("宋体",1,18)
+        // Original font was "宋体" (SimSun). Replaced with a more standard logical font.
+        message.font = Font(Font.SANS_SERIF, Font.BOLD, 18)
         message.isVisible = false
 
         components += taskTablePane
@@ -141,7 +143,7 @@ class TaskManagerPage : Page("View Processes", Main.width/10*3,0,Main.width/10,M
     }
     private fun getTasks():Array<Array<String>>?{
         return try {
-            LogUtils.info("GetAllProcInfo")
+            LogUtils.info("Getting all process info")
             val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell top -b -n 1")
             val br = BufferedReader(InputStreamReader(process.inputStream))
             var line: String?
@@ -182,10 +184,10 @@ class TaskManagerPage : Page("View Processes", Main.width/10*3,0,Main.width/10,M
                 if (name.contains("top -b -n 1")) continue
                 taskList += arrayOf(name,user,pid,res,cpu,mem,state)
             }
-            LogUtils.info("Success obtain all proc info")
+            LogUtils.info("Successfully obtained all process info")
             if (taskList.isEmpty()) null else taskList.toTypedArray()
         } catch (e: Exception) {
-            LogUtils.error("Error getting Proc Info,$e")
+            LogUtils.error("Error getting process info, $e")
             null
         }
     }
