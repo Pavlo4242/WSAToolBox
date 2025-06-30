@@ -35,7 +35,7 @@ jobs:
       # 5. (Optional) Upload the built JAR as an artifact
       # The JAR will be located in the build/libs directory
       - name: Upload JAR artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wsatoolbox-jar
           path: WSAToolbox/build/libs/WSAToolbox-1.0-SNAPSHOT.jar
