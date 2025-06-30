@@ -14,16 +14,16 @@ import javax.swing.*
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
 
-class TaskManagerPage : Page("查看进程", Main.width/10*3,0,Main.width/10,Main.height/40*3) {
-    private val taskTable = JTable(arrayOf(),arrayOf("进程名称","用户","PID","RES","%CPU","%MEM","状态"))
+class TaskManagerPage : Page("View Processes", Main.width/10*3,0,Main.width/10,Main.height/40*3) {
+    private val taskTable = JTable(arrayOf(),arrayOf("Proc Name","User","PID","RES","%CPU","%MEM","Status"))
     private val taskTablePane by lazy {
         val scrollPane = JScrollPane(taskTable)
         scrollPane.setBounds(0,height/16*3,width - width/50,height - height/16*5)
         scrollPane.isVisible = false
         return@lazy scrollPane
     }
-    private val refresh = JButton("刷新")
-    //private val killTask = JButton("杀死")
+    private val refresh = JButton("Refresh")
+    //private val killTask = JButton("Kill")
     private val message = JLabel("Idle...")
     //private val taskPIDS = arrayListOf<String>()
     init {
@@ -33,7 +33,7 @@ class TaskManagerPage : Page("查看进程", Main.width/10*3,0,Main.width/10,Mai
         taskTable.rowHeight = (height - height/16*5)/10
         taskTable.autoResizeMode = JTable.AUTO_RESIZE_OFF
         //taskTable.selectionModel.addListSelectionListener { killTask.isEnabled = taskTable.selectedRow != -1 && Main.adbState }
-        taskTable.font = Font("微软雅黑",1,16)
+        taskTable.font = Font("MS YaHei",1,16)
         taskTable.columnModel.getColumn(0).preferredWidth = width/12*5
         taskTable.columnModel.getColumn(1).preferredWidth = width/6
         taskTable.columnModel.getColumn(2).preferredWidth = width/16
@@ -69,10 +69,10 @@ class TaskManagerPage : Page("查看进程", Main.width/10*3,0,Main.width/10,Mai
         refresh.setBounds(width/50,height/10,width/20*3, height/40*3)
         refresh.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {
-                message.text = "刷新中..."
+                message.text = "Refreshing"
                 Main.window.update(Main.window.graphics)
                 update()
-                message.text = if (Main.adbState) "刷新完成" else "未连接到WSA"
+                message.text = if (Main.adbState) "Refresh Finish" else "NotConnectWSA"
             }
             override fun mousePressed(e: MouseEvent?) {}
             override fun mouseReleased(e: MouseEvent?) {}
@@ -85,7 +85,7 @@ class TaskManagerPage : Page("查看进程", Main.width/10*3,0,Main.width/10,Mai
         killTask.addMouseListener(object : MouseListener{
             override fun mouseClicked(e: MouseEvent?) {
                 if (!killTask.isEnabled) return
-                message.text = "尝试杀死进程..."
+                message.text = "Attempt2Kill"
                 Main.window.update(Main.window.graphics)
                 message.text = if (Main.adbState) {
                     val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell kill ${taskPIDS[taskTable.selectedRow]}")
@@ -101,7 +101,7 @@ class TaskManagerPage : Page("查看进程", Main.width/10*3,0,Main.width/10,Mai
                     Main.window.update(Main.window.graphics)
                     update()
                     "${lines.last()},刷新完成."
-                } else "未连接到WSA"
+                } else "NotConnectWSA"
             }
             override fun mousePressed(e: MouseEvent?) {}
             override fun mouseReleased(e: MouseEvent?) {}
@@ -128,7 +128,7 @@ class TaskManagerPage : Page("查看进程", Main.width/10*3,0,Main.width/10,Mai
         }
         //taskPIDS.clear()
         //taskList?.forEach { taskPIDS += it[2] }
-        taskTable.model = object : DefaultTableModel(taskList,arrayOf("进程名称","用户","PID","RES","%CPU","%MEM","状态")){
+        taskTable.model = object : DefaultTableModel(taskList,arrayOf("Process Name","User","PID","RES","%CPU","%MEM","Status")){
             override fun isCellEditable(row: Int, column: Int): Boolean {
                 return false
             }
@@ -141,7 +141,7 @@ class TaskManagerPage : Page("查看进程", Main.width/10*3,0,Main.width/10,Mai
     }
     private fun getTasks():Array<Array<String>>?{
         return try {
-            LogUtils.info("获取所有进程信息")
+            LogUtils.info("GetAllProcInfo")
             val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell top -b -n 1")
             val br = BufferedReader(InputStreamReader(process.inputStream))
             var line: String?
@@ -165,11 +165,11 @@ class TaskManagerPage : Page("查看进程", Main.width/10*3,0,Main.width/10,Mai
                 //string = string.remove(2)
                 var state = array[3]//string.split(" ")[0]
                 state = when(state){
-                    "R" -> "运行中"
-                    "Z" -> "僵尸"
-                    "S" -> "睡眠"
-                    "D" -> "睡眠(不可中断)"
-                    "T" -> "跟踪/停止"
+                    "R" -> "Running"
+                    "Z" -> "Zombie"
+                    "S" -> "Sleep"
+                    "D" -> "Sleep (uninterruptible)"
+                    "T" -> "Trace/Stop"
                     else -> state
                 }
                 //if (state == "Z") continue
@@ -182,10 +182,10 @@ class TaskManagerPage : Page("查看进程", Main.width/10*3,0,Main.width/10,Mai
                 if (name.contains("top -b -n 1")) continue
                 taskList += arrayOf(name,user,pid,res,cpu,mem,state)
             }
-            LogUtils.info("获取所有进程信息成功")
+            LogUtils.info("Success obtain all proc info")
             if (taskList.isEmpty()) null else taskList.toTypedArray()
         } catch (e: Exception) {
-            LogUtils.error("获取所有进程信息时出错,$e")
+            LogUtils.error("Error getting Proc Info,$e")
             null
         }
     }
