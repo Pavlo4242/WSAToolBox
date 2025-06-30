@@ -1,14 +1,14 @@
-name: Build Kotlin Application
+name: Build WSAToolbox
 
 on:
   push:
-    branches: [ main ]
+    branches: [master]
   pull_request:
-    branches: [ main ]
+    branches: [master]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # Using Windows for native DLL/EXE compatibility
 
     steps:
     - uses: actions/checkout@v4
@@ -18,64 +18,31 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: 'gradle'
 
-    - name: Create Gradle configuration
+    - name: Install Kotlin compiler
+      run: choco install kotlin
+
+    - name: Create output directory
+      run: mkdir output
+
+    - name: Compile Kotlin to JAR (including runtime)
+      working-directory: ./WSAToolbox
       run: |
-        cat > build.gradle.kts << 'EOF'
-        plugins {
-            kotlin("jvm") version "1.9.22"
-            application
-            id("com.github.johnrengelman.shadow") version "8.1.1"
-        }
+        kotlinc src/main/kevin -include-runtime -d ../output/WSAToolbox.jar
+        # Include all .kt files recursively
+        # -include-runtime bundles Kotlin stdlib
 
-        repositories {
-            mavenCentral()
-        }
-
-        kotlin {
-            jvmToolchain(17)
-        }
-
-        application {
-            mainClass.set("MainKt")
-        }
-
-        sourceSets {
-            main {
-                kotlin {
-                    srcDir("src/main/kevin")
-                }
-                resources {
-                    srcDir("src/main/resources")
-                    exclude("**/*.dll", "**/*.exe")  // Exclude binaries from JAR
-                }
-            }
-        }
-
-        tasks.register<Zip>("dist") {
-            from(tasks.shadowJar)
-            from("src/main/resources") {
-                include("**/*.dll", "**/*.exe")
-                into("resources")
-            }
-            archiveFileName.set("application-dist.zip")
-        }
-
-        tasks.build {
-            dependsOn("dist")
-        }
-        EOF
-
-    - name: Build with Gradle
+    - name: Package resources with JAR
+      working-directory: ./WSAToolbox
       run: |
-        ./gradlew build
-        ./gradlew dist
-
-    - name: Upload artifacts
+        # Copy all resources to output directory
+        xcopy /E /Y src/main\resources ..\output\resources\
+        # Create a zip containing both JAR and resources
+        cd ..\output
+        7z a -tzip WSAToolbox.zip .\*
+        
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: application-dist
-        path: |
-          build/distributions/application-dist.zip
-          build/libs/*-all.jar
+        name: WSAToolbox
+        path: output/WSAToolbox.zip
