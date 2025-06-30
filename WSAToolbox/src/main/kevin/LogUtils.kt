@@ -8,7 +8,7 @@ object LogUtils {
     fun warn(msg: String) = log("WARN",msg)
     fun error(msg: String) = log("ERROR",msg)
     fun debug(msg: String) = log("DEBUG",msg)
-    fun noConnectionInfo() = info("未连接到WSA")
+    fun noConnectionInfo() = info("NotConnectedWSA")
     private fun log(string: String,msg: String){
         val text = "[${SimpleDateFormat("HH:mm:ss").format(System.currentTimeMillis())}] [${Thread.currentThread().name}/$string]: $msg"
         println(text)
