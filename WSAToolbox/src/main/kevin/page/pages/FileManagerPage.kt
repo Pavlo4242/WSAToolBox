@@ -15,15 +15,15 @@ import javax.swing.*
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
 
-class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main.height/40*3) {
-    private val fileTable = JTable(arrayOf(),arrayOf("名称","修改时间","大小","内含文件数量","类型"))
+class FileManagerPage : Page("File Transfer", Main.width/5*2,0,Main.width/10,Main.height/40*3) {
+    private val fileTable = JTable(arrayOf(),arrayOf("Name","Modification Time","Size","Number Files","Type"))
     private val fileTablePane by lazy {
         val scrollPane = JScrollPane(fileTable)
         scrollPane.setBounds(0,height/16*3 + height/40*3,width - width/50,height - height/16*5 - height/40*3)
         scrollPane.isVisible = false
         return@lazy scrollPane
     }
-    private val upload = JButton("上传")
+    private val upload = JButton("Upload")
     private val delete = JButton("删除")
     private val download = JButton("下载")
     private val up = JButton("向上")
@@ -38,7 +38,7 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
         fileTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
         fileTable.rowHeight = (height - height/16*5)/10
         fileTable.autoResizeMode = JTable.AUTO_RESIZE_OFF
-        fileTable.font = Font("微软雅黑",1,16)
+        fileTable.font = Font("MS YaHei",1,16)
         fileTable.columnModel.getColumn(0).preferredWidth = width/12*5
         fileTable.columnModel.getColumn(1).preferredWidth = width/24*5
         fileTable.columnModel.getColumn(2).preferredWidth = width/6
@@ -85,16 +85,16 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
         upload.addMouseListener(object : MouseListener{
             override fun mouseClicked(e: MouseEvent?) {
                 try {
-                    LogUtils.info("选择上传的文件")
+                    LogUtils.info("Select File to Upload")
                     val jFileChooser = JFileChooser()
-                    jFileChooser.dialogTitle = "请选择文件"
+                    jFileChooser.dialogTitle = "Select File"
                     jFileChooser.fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
                     jFileChooser.isMultiSelectionEnabled = true
                     if (jFileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
-                        message.text = "上传中..."
+                        message.text = "Uploading"
                         Main.window.update(Main.window.graphics)
                         jFileChooser.selectedFiles.forEach {
-                            LogUtils.debug("上传$it")
+                            LogUtils.debug("Upload$it")
                             val command = if (it.isFile) {
                                 "\"$nowPath\"/"
                             } else if (it.isDirectory) {
@@ -111,18 +111,18 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
                                     LogUtils.info("ADB: $line")
                                 }
                                 br.close()
-                                LogUtils.debug("上传${it}完成")
+                                LogUtils.debug("Upload${it}完成")
                             }
                         }
-                        message.text = "上传完成,刷新中..."
+                        message.text = "Upload Complete Refreshing ..."
                         Main.window.update(Main.window.graphics)
-                        LogUtils.info("上传完成,刷新中...")
+                        LogUtils.info("Upload Complete Refreshing ...")
                         update()
-                        message.text = "上传完成,刷新完成"
-                        LogUtils.info("上传完成,刷新完成")
-                    } else LogUtils.info("取消")
+                        message.text = "Upload Done Refresh FInish"
+                        LogUtils.info("Upload Done Refresh FInish")
+                    } else LogUtils.info("Cancel")
                 } catch (e:Exception){
-                    LogUtils.error("上传错误,$e")
+                    LogUtils.error("Upload Error,$e")
                 }
             }
             override fun mousePressed(e: MouseEvent?) {}
@@ -137,8 +137,8 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
             override fun mouseClicked(e: MouseEvent?) {
                 try {
                     if (!delete.isEnabled) return
-                    LogUtils.info("尝试删除...")
-                    message.text = "尝试删除..."
+                    LogUtils.info("Try Delete")
+                    message.text = "Try Delete"
                     Main.window.update(Main.window.graphics)
                     val file = files[fileTable.selectedRow]
                     val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell rm${if (file.second>1) " -rf" else ""} \"${nowPath.replace(" ","\\ ")}/${file.first.replace(" ","\\ ")}\"")
@@ -150,13 +150,13 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
                         lastMessage = line!!
                     }
                     br.close()
-                    LogUtils.info("删除完成")
-                    message.text = "${if (lastMessage=="") "删除成功" else try{lastMessage.split(": ")[2]}catch (e:Exception){"删除错误"}},刷新中..."
+                    LogUtils.info("Delete Complete")
+                    message.text = "${if (lastMessage=="") "Delete Success" else try{lastMessage.split(": ")[2]}catch (e:Exception){"Delete Err"}},Refreshing..."
                     Main.window.update(Main.window.graphics)
                     update()
-                    message.text = "${if (lastMessage=="") "删除成功" else try{lastMessage.split(": ")[2]}catch (e:Exception){"删除错误"}},刷新完成"
+                    message.text = "${if (lastMessage=="") "Delete Success" else try{lastMessage.split(": ")[2]}catch (e:Exception){"Delete Err"}},Refresh Done"
                 }catch (e:Exception){
-                    LogUtils.error("删除错误,$e")
+                    LogUtils.error("Delete Err,$e")
                 }
             }
             override fun mousePressed(e: MouseEvent?) {}
@@ -171,15 +171,15 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
             override fun mouseClicked(e: MouseEvent?) {
                 try {
                     if (!download.isEnabled) return
-                    LogUtils.info("下载文件")
+                    LogUtils.info("DL File")
                     val jFileChooser = JFileChooser()
-                    jFileChooser.dialogTitle = "请选择保存文件的位置"
+                    jFileChooser.dialogTitle = "Select Save Location"
                     jFileChooser.dialogType = JFileChooser.SAVE_DIALOG
                     jFileChooser.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
                     if (jFileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION){
                         val path = jFileChooser.selectedFile.toString().replace("\\","/")
                         LogUtils.debug("${Main.aDBCommand} pull \"$nowPath/${files[fileTable.selectedRow].first}\" \"${path}${if(!path.endsWith("/"))"/" else ""}${files[fileTable.selectedRow].first}\"")
-                        message.text = "下载中..."
+                        message.text = "Downloading"
                         Main.window.update(Main.window.graphics)
                         val process = Runtime.getRuntime().exec("${Main.aDBCommand} pull \"$nowPath/${files[fileTable.selectedRow].first}\" \"${path}${if(!path.endsWith("/"))"/" else ""}${files[fileTable.selectedRow].first}\"")
                         val br = BufferedReader(InputStreamReader(process.inputStream))
@@ -190,11 +190,11 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
                             lastLine = line!!+","
                         }
                         br.close()
-                        message.text = "${lastLine}执行完成"
-                        LogUtils.info("${lastLine}执行完成")
-                    } else LogUtils.info("取消")
+                        message.text = "${lastLine}Execution Fin"
+                        LogUtils.info("${lastLine}Execution Fin")
+                    } else LogUtils.info("Cancel")
                 }catch (e:Exception){
-                    LogUtils.error("下载错误,$e")
+                    LogUtils.error("DL Err,$e")
                 }
             }
             override fun mousePressed(e: MouseEvent?) {}
@@ -257,7 +257,7 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
         }
         files.clear()
         fileList?.forEach { files += it[0] to it[3].toInt() }
-        fileTable.model = object : DefaultTableModel(fileList,arrayOf("名称","修改时间","大小","内含文件数量","类型")){
+        fileTable.model = object : DefaultTableModel(fileList,arrayOf("Name","Modification Time","Size","Number Files","Type")){
             override fun isCellEditable(row: Int, column: Int): Boolean {
                 return false
             }
@@ -275,7 +275,7 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
     }
     private fun getFiles(): Array<Array<String>>? {
         return try {
-            LogUtils.info("获取文件列表")
+            LogUtils.info("Get File List")
             val process = Runtime.getRuntime().exec("${Main.aDBCommand} shell ls $nowPath -all")
             val br = BufferedReader(InputStreamReader(process.inputStream,"UTF-8"))
             var line: String?
@@ -289,7 +289,7 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
                 LogUtils.warn("ls: //init: Permission denied")
                 lines.removeFirst()
             } else if (!lines.first().startsWith("total")) {
-                LogUtils.error("错误,${lines.first()}")
+                LogUtils.error("Err,${lines.first()}")
                 return null
             }
             lines.removeFirst()
@@ -301,12 +301,12 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
                 val time = "${array[2]} ${array[3].split(".")[0]}"
                 val name = array[4].replace("\\ "," ")
                 if (name.contains(" ->")||name=="."||name=="..") continue
-                files += arrayOf(name,time,size,fileCount,if(fileCount=="1") "文件" else "文件夹")
+                files += arrayOf(name,time,size,fileCount,if(fileCount=="1") "File" else "Folder")
             }
-            LogUtils.info("获取所有文件成功!")
+            LogUtils.info("All File Success Get!")
             if (files.isNotEmpty()) files.toTypedArray() else null
         }catch (e: Exception){
-            LogUtils.error("获取文件异常,$e")
+            LogUtils.error("Execption Get File,$e")
             null
         }
     }
