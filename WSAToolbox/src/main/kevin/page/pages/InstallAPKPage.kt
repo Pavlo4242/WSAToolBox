@@ -16,7 +16,7 @@ import javax.swing.JLabel
 import javax.swing.JTextField
 import javax.swing.filechooser.FileFilter
 
-class InstallAPKPage : Page("安装APK", Main.width/10,0,Main.width/10,Main.height/40*3) {
+class InstallAPKPage : Page("Install APK", Main.width/10,0,Main.width/10,Main.height/40*3) {
     private val pathText by lazy { JLabel() }
     private val apkPath by lazy { JTextField() }
     private val installButton by lazy { JButton() }
@@ -24,29 +24,31 @@ class InstallAPKPage : Page("安装APK", Main.width/10,0,Main.width/10,Main.heig
     private val infoText by lazy { JLabel() }
     init {
         pathText.setBounds(width/100*3,height/10,width/10*3,height/40*3)
-        pathText.font = Font("宋体",1,20)
-        pathText.text = "路径:"
+        // Original font was "宋体" (SimSun). Replaced with a more standard logical font.
+        pathText.font = Font(Font.SANS_SERIF, Font.BOLD, 20)
+        pathText.text = "Path:"
         pathText.isVisible = false
 
         apkPath.setBounds(width/10,height/10,width - width/20*3,height/40*3)
-        apkPath.font = Font("宋体",1,18)
+        // Original font was "宋体" (SimSun). Replaced with a more standard logical font.
+        apkPath.font = Font(Font.SANS_SERIF, Font.BOLD, 18)
         apkPath.addCaretListener { if(File(apkPath.text).isFile&& apkPath.text.endsWith(".apk",true)) apkPath.foreground = Color(100,200,100) else apkPath.foreground = Color(255,100,100) }
         apkPath.isVisible = false
 
         installButton.setBounds(width/100*3,height/10 + height/40*3,width - width/20*3 + width/10 - width/100*3,height/40*3)
-        installButton.text = "安装"
+        installButton.text = "Install"
         installButton.isVisible = false
         installButton.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent) {
                 try {
-                    LogUtils.debug("尝试安装...")
+                    LogUtils.debug("Attempting to install...")
                     if(File(apkPath.text).isFile&& apkPath.text.endsWith(".apk",true)) {
                         if (!Main.adbState) {
-                            infoText.text = "未连接至WSA,请连接后重试"
-                            LogUtils.debug("未连接至WSA,请连接后重试")
+                            infoText.text = "Not connected to WSA, please connect and retry"
+                            LogUtils.debug("Not connected to WSA, please connect and retry")
                             return
                         }
-                        infoText.text = "安装中..."
+                        infoText.text = "Installing..."
                         Main.window.update(Main.window.graphics)
                         val process = Runtime.getRuntime().exec("${Main.aDBCommand} install \"${apkPath.text}\"")
                         val br = BufferedReader(InputStreamReader(process.inputStream))
@@ -58,14 +60,14 @@ class InstallAPKPage : Page("安装APK", Main.width/10,0,Main.width/10,Main.heig
                         }
                         br.close()
                         infoText.text = "${lines.first()},${lines.last()}"
-                        LogUtils.debug("安装结束")
+                        LogUtils.debug("Installation finished")
                     } else {
-                        infoText.text = "路径不正确或不支持的文件类型"
-                        LogUtils.debug("路径不正确或不支持的文件类型")
+                        infoText.text = "Incorrect path or unsupported file type"
+                        LogUtils.debug("Incorrect path or unsupported file type")
                     }
                 }catch (e:Exception){
-                    LogUtils.error("安装错误,$e")
-                    infoText.text = "安装错误,$e"
+                    LogUtils.error("Installation error, $e")
+                    infoText.text = "Installation error, $e"
                 }
             }
             override fun mousePressed(e: MouseEvent?) {}
@@ -75,26 +77,26 @@ class InstallAPKPage : Page("安装APK", Main.width/10,0,Main.width/10,Main.heig
         })
 
         pathButton.setBounds(width/100*3,height/10 + height/20*3,width - width/20*3 + width/10 - width/100*3,height/40*3)
-        pathButton.text = "选择APK"
+        pathButton.text = "Select APK"
         pathButton.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {
                 try {
-                    LogUtils.debug("选择APK")
+                    LogUtils.debug("Select APK")
                     val jFileChooser = JFileChooser()
-                    jFileChooser.dialogTitle = "请选择APK文件"
+                    jFileChooser.dialogTitle = "Please select an APK file"
                     jFileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
                     jFileChooser.isMultiSelectionEnabled = false
                     jFileChooser.isAcceptAllFileFilterUsed = false
                     jFileChooser.addChoosableFileFilter(object : FileFilter() {
                         override fun accept(pathname: File) = pathname.isDirectory || pathname.toString().endsWith(".apk")
-                        override fun getDescription() = "安装包(*.apk)"
+                        override fun getDescription() = "Package files (*.apk)"
                     })
                     if (jFileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
                         apkPath.text = jFileChooser.selectedFile.toString()
-                    } else LogUtils.info("取消")
-                    LogUtils.debug("选择完成")
+                    } else LogUtils.info("Cancelled")
+                    LogUtils.debug("Selection complete")
                 } catch (e:Exception){
-                    LogUtils.error("选择错误,$e")
+                    LogUtils.error("Selection error, $e")
                 }
             }
             override fun mousePressed(e: MouseEvent?) {}
