@@ -5,10 +5,11 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   build:
-    runs-on: windows-latest  # Using Windows for native DLL/EXE compatibility
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -20,27 +21,27 @@ jobs:
         distribution: 'temurin'
 
     - name: Install Kotlin compiler
-      run: choco install kotlinc
+      run: choco install kotlin -y
 
-    - name: Create output directory
-      run: mkdir output
-
-    - name: Compile Kotlin to JAR (including runtime)
-      working-directory: ./WSAToolbox
+    - name: Create directory structure
       run: |
+        mkdir output
+        mkdir output\resources
+
+    - name: Compile Kotlin to JAR
+      run: |
+        cd WSAToolbox
         kotlinc src/main/kevin -include-runtime -d ../output/WSAToolbox.jar
-        # Include all .kt files recursively
-        # -include-runtime bundles Kotlin stdlib
 
-    - name: Package resources with JAR
-      working-directory: ./WSAToolbox
+    - name: Copy resources
       run: |
-        # Copy all resources to output directory
-        xcopy /E /Y src/main\resources ..\output\resources\
-        # Create a zip containing both JAR and resources
-        cd ..\output
-        7z a -tzip WSAToolbox.zip .\*
-        
+        xcopy /E /Y WSAToolbox\src\main\resources output\resources
+
+    - name: Create distribution zip
+      run: |
+        cd output
+        7z a -tzip WSAToolbox.zip *
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
