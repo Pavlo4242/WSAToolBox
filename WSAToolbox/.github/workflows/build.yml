@@ -1,0 +1,81 @@
+name: Build Kotlin Application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'gradle'
+
+    - name: Create Gradle configuration
+      run: |
+        cat > build.gradle.kts << 'EOF'
+        plugins {
+            kotlin("jvm") version "1.9.22"
+            application
+            id("com.github.johnrengelman.shadow") version "8.1.1"
+        }
+
+        repositories {
+            mavenCentral()
+        }
+
+        kotlin {
+            jvmToolchain(17)
+        }
+
+        application {
+            mainClass.set("MainKt")
+        }
+
+        sourceSets {
+            main {
+                kotlin {
+                    srcDir("src/main/kevin")
+                }
+                resources {
+                    srcDir("src/main/resources")
+                    exclude("**/*.dll", "**/*.exe")  // Exclude binaries from JAR
+                }
+            }
+        }
+
+        tasks.register<Zip>("dist") {
+            from(tasks.shadowJar)
+            from("src/main/resources") {
+                include("**/*.dll", "**/*.exe")
+                into("resources")
+            }
+            archiveFileName.set("application-dist.zip")
+        }
+
+        tasks.build {
+            dependsOn("dist")
+        }
+        EOF
+
+    - name: Build with Gradle
+      run: |
+        ./gradlew build
+        ./gradlew dist
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: application-dist
+        path: |
+          build/distributions/application-dist.zip
+          build/libs/*-all.jar
